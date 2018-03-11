@@ -39,37 +39,43 @@ public class Controller {
 
             int j = 0;
             int exit1, exit2;
-            boolean checking = true;
+            boolean checking = false;
             
             exit1 = exit2 = 0;
 
             /*rt part*/
-            while(j < 32 && exit1 == 0)
-            {
+            while(j < 32 && exit1 == 0) {
                     jString = Integer.toString(j);		/*Only number. No "R" of R1*/
                     checking = rt.contains(jString);
 
-                    if (checking)
+                    if(checking)
                         exit1 = 1;
             }
-
-            if (checking)
-            {
-                j = 0;
-                /*base part*/
-                while(j < 32 && exit2 == 0)
-                {
-                        jString = Integer.toString(j);		/*Only number. No "R" of R1*/
-                        checking = base.contains(jString);
-
-                        if(checking)
-                            exit2 = 1;
-
-                } /*No Code for checking offset yet. Offset is 1000-1FFF? so I have to make sure its only between 1000-1FFF?*/
+            
+            if(!checking) {
+                return "Syntax Error: rt should be from R0 to R31";
             }
-            else
-            {
-                    System.out.print("Syntax Error");
+            
+            checking = false;
+            j = 0;
+            
+            /*base part*/
+            while(j < 32 && exit2 == 0) {
+                jString = Integer.toString(j);		/*Only number. No "R" of R1*/
+                checking = base.contains(jString);
+
+                if(checking)
+                    exit2 = 1;
+            }
+            
+            if(!checking){
+                return "Syntax Error: base should be from R0 to R31";
+            }
+                
+            /*No Code for checking offset yet. Offset is 1000-1FFF? so I have to make sure its only between 1000-1FFF?*/
+            
+            else {
+                return " "; //means no error
             }
         }
 //        else if (line.startsWith("DADDIU"))		/*DADDIU rt, rs, immediate. DADDIU R1, R0, #0002*/
