@@ -35,7 +35,7 @@ public class Controller {
         
         for(int i = 0; i < inst.size(); i++){
             if(inst.get(i).startsWith(";"))
-                c = new Code(inst.get(i), null, getOpcode(inst.get(i))); //initialize model
+                c = new Code(inst.get(i), null, null); //initialize model
             else
                 c = new Code(inst.get(i), Integer.toHexString(4096 + (i * 4)), getOpcode(inst.get(i))); //initialize model
             code.add(c);
@@ -412,7 +412,7 @@ public class Controller {
     }
 
     
-    private String getOpcode(Code code){
+    private String getOpcode(String code){
         
     }
     
