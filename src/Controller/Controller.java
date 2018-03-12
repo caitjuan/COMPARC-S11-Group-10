@@ -94,6 +94,33 @@ public class Controller {
             //        else if (line.startsWith("DADDU"))		/*DADDU rd, rs, rt. DADDU R4, R1, R2*/
             //        else if (line.startsWith("SLT"))		/*SLT rd, rs, rt. SLT R3, R1, R2*/
             //        else if (line.startsWith("BC"))			/*BC offset. BC L2*/
+            else if(code.get(i).startsWith("BLTZ")) {
+                String offset = code.get(i).substring(6);
+                boolean exist = false;
+                
+                for(int j = 0; j < code.size(); j++){
+                    if(code.get(j).startsWith(offset))
+                        exist = true;
+                }
+                
+                if(!exist){
+                    return "Syntax Error! The offset does not exist";
+                }
+            }
+            
+            else if(code.get(i).startsWith("BC")) {
+                String offset = code.get(i).substring(6);
+                boolean exist = false;
+                
+                for(int j = 0; j < code.size(); j++){
+                    if(code.get(j).startsWith(offset))
+                        exist = true;
+                }
+                
+                if(!exist){
+                    return "Syntax Error! The offset does not exist";
+                }
+            }
 
             /*How to check LD/SD offset, immediate, branch offset*/
         }
