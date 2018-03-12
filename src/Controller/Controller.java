@@ -5,21 +5,25 @@ import java.util.*;
 
 public class Controller {
     Scanner sc = new Scanner(System.in);
-    ArrayList<String> inst = new ArrayList<String>();
+    ArrayList<Code> code = new ArrayList<>();
     
     public void main(String[] args) {
         getInput();
     }
     
     public void getInput(){
-        String code;
+        String line;
         String error =" ";
+        Code c;
+        ArrayList<String> inst = new ArrayList<String>();
+        
         System.out.println("Enter your code (press '?' when done):");
+        
         do{ 
             do{
-                code = sc.next();
-                if(!code.equals('?')){
-                    inst.add(code);
+                line = sc.next();
+                if(!line.equals('?')){
+                    inst.add(line);
                 }
             }while(!sc.next().equals('?'));
             error = errorCheck(inst);
@@ -28,6 +32,11 @@ public class Controller {
                 inst.clear(); //reset arraylist
             }
         }while(!error.contentEquals(" "));
+        
+        for(int i = 0; i < inst.size(); i++){
+            c = new Code(inst.get(i), Integer.toHexString(4096 + (i * 4)), getOpcode(inst.get(i))); //initialize model
+            code.add(c);
+        }
     }
     
     private String errorCheck(ArrayList<String> code){
@@ -88,4 +97,9 @@ public class Controller {
         
         return " "; //no error
     }
+    
+    private String getOpcode(String code){
+        
+    }
+    
 }

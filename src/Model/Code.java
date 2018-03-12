@@ -1,47 +1,15 @@
 package Model;
 
 public class Code {
-    private String instruction;
-    private String opcode;
-    private String address;
+    private final String instruction;
+    private final String opcode;
+    private final String address;
     
-    public Code(String instruction, String address) {
+    public Code(String instruction, String address, String opcode) {
         this.instruction = instruction;
         this.address = address;
+        this.opcode = opcode;
     }
-      
-    public void setOpcode(){
-        //I-type
-        if(instruction.startsWith("LD")){
-            //TODO set opcode
-        }
-        else if(instruction.startsWith("SD")){
-            //TODO set opcode
-        }
-        else if(instruction.startsWith("DADDIU")){
-            //TODO set opcode
-        }
-        else if(instruction.startsWith("XORI")){
-            //TODO set opcode
-        }
-        else if(instruction.startsWith("BLTZ")){
-            //TODO set opcode
-        }
-        
-        //R-type
-        else if(instruction.startsWith("DADDU")){
-            //TODO set opcode
-        }
-        else if(instruction.startsWith("SLT")){
-            //TODO set opcode
-        }
-        
-        //J-type
-        else if(instruction.startsWith("BC")){
-            //TODO set opcode
-        }
-    }
-    
     public String getAddress() {
         return address;
     }
