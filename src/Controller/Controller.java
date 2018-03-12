@@ -95,7 +95,7 @@ public class Controller {
             //        else if (line.startsWith("SLT"))		/*SLT rd, rs, rt. SLT R3, R1, R2*/
             //        else if (line.startsWith("BC"))			/*BC offset. BC L2*/
             else if(code.get(i).startsWith("BLTZ")) {
-                String offset = code.get(i).substring(6);
+                String offset = code.get(i).substring(9);
                 boolean exist = false;
                 
                 for(int j = 0; j < code.size(); j++){
@@ -109,7 +109,7 @@ public class Controller {
             }
             
             else if(code.get(i).startsWith("BC")) {
-                String offset = code.get(i).substring(6);
+                String offset = code.get(i).substring(3);
                 boolean exist = false;
                 
                 for(int j = 0; j < code.size(); j++){
@@ -128,7 +128,7 @@ public class Controller {
         return " "; //no error
     }
     
-    private String getOpcode(String code){
+    private String getOpcode(Code code){
         
     }
     
