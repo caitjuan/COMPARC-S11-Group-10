@@ -46,13 +46,107 @@ public class Controller {
         boolean isError = false;
         int size = code.size();
 
-        for(int i = 0; i < size; i++){
-            if (code.get(i).startsWith("LD") || code.get(i).startsWith("SD")) /*LD rt, offset(base)*/ /*SD rt, offset(base)*/
+        for(int i = 0; i < size; i++)
+        {
+            String oldStr = code.get(i);
+            String delStr;
+
+            int length = oldStr.length();
+            int x = 0;
+            int k = 0;
+            int exit = 0;
+
+
+            while (k < length && exit == 0)
+            {
+                if (!(oldStr.charAt(k)== ':'))
+                    x++;
+                else
+                    exit = 1;
+
+
+                k++;
+            }
+
+
+            if (exit == 1)
+            {
+                delStr = oldStr.substring(0, k);
+                oldStr = oldStr.replace(delStr, "");
+            }
+            
+            if (oldStr.startsWith("LD")) /*LD rt, offset(base)*/ 
             {
                 String jString;
-                String rt = code.get(i).substring(3, 5);
-                String offset = code.get(i).substring(7, 11);
-                String base  = code.get(i).substring(12);
+                String rt = oldStr.substring(3, 5);
+                String offset = oldStr.substring(7, 11);
+                String base  = oldStr.substring(12);
+
+                int j = 1;
+                int exit1, exit2, exit3;
+                boolean checking = false;
+
+                exit1 = exit2 = exit3 = 0;
+
+                /*rt part*/
+                while(j < 32 && exit1 == 0) {
+                        jString = Integer.toString(j);		/*Only number. No "R" of R1*/
+                        checking = rt.contains(jString);
+
+                        if(checking)
+                            exit1 = 1;
+                }
+
+                if(!checking) {
+                    return "Syntax Error: rt should be from R0 to R31";
+                }
+
+                checking = false;
+                String hex = "1000";
+                int value;
+
+                /*offset part*/
+                while (!(hex.equals("1FFF")) && exit2 == 0)
+                {
+                    checking = offset.contains(hex);
+
+                    value = Integer.parseInt(hex, 16);	
+                    value++;
+                    hex = Integer.toHexString(value);
+
+
+                    if(checking)
+                        exit2 = 1;
+
+                }
+
+                if(!checking){
+                    return "Syntax Error: offset does not exist";
+                }
+
+                checking = false;
+                j = 0;
+
+                /*base part*/
+                while(j < 32 && exit3 == 0) {
+                    jString = Integer.toString(j);		/*Only number. No "R" of R1*/
+                    checking = base.contains(jString);
+
+                    if(checking)
+                        exit3 = 1;
+                }
+
+                if(!checking){
+                    return "Syntax Error: base should be from R0 to R31";
+                }
+            }
+            
+            else if (oldStr.startsWith("SD")) /*SD rt, offset(base)*/
+            {
+                String jString;
+                String rt = oldStr.substring(3, 5);
+                String offset = oldStr.substring(7, 11);
+                String base  = oldStr.substring(12);
 
                 int j = 0;
                 int exit1, exit2, exit3;
@@ -113,14 +207,14 @@ public class Controller {
                 }
             }
           
-            else if (code.get(i).startsWith("DADDIU"))		/*DADDIU rt, rs, immediate. DADDIU R3, R3, #0002*/
+            else if (oldStr.startsWith("DADDIU"))		/*DADDIU rt, rs, immediate. DADDIU R3, R3, #0002*/
             {
                 String jString;
-                String rt = code.get(i).substring(7, 9);
-                String rs = code.get(i).substring(11, 14);
-                String imm  = code.get(i).substring(15);
+                String rt = oldStr.substring(7, 9);
+                String rs = oldStr.substring(11, 14);
+                String imm  = oldStr.substring(15);
 
-                int j = 0;
+                int j = 1;
                 int exit1, exit2, exit3;
                 boolean checking = false;
 
@@ -179,14 +273,14 @@ public class Controller {
                 }
             }
             
-            else if (code.get(i).startsWith("XORI"))		/*XORI rt, rs, immediate. XORI R10, R2, #FFFF*/
+            else if (oldStr.startsWith("XORI"))		/*XORI rt, rs, immediate. XORI R10, R2, #FFFF*/
             {
                 String jString;
-                String rt = code.get(i).substring(5, 7);
-                String rs = code.get(i).substring(9, 12);
-                String imm  = code.get(i).substring(13);
+                String rt = oldStr.substring(5, 7);
+                String rs = oldStr.substring(9, 12);
+                String imm  = oldStr.substring(13);
 
-                int j = 0;
+                int j = 1;
                 int exit1, exit2, exit3;
                 boolean checking = false;
 
@@ -245,11 +339,11 @@ public class Controller {
                 }
             }
             
-            else if (code.get(i).startsWith("BLTZ"))		/*BLTZ rs, offset. BLTZ R1, L1 */
+            else if (oldStr.startsWith("BLTZ"))		/*BLTZ rs, offset. BLTZ R1, L1 */
             {
                 String jString;
-                String rs = code.get(i).substring(5, 7);
-                String offset = code.get(i).substring(9);
+                String rs = oldStr.substring(5, 7);
+                String offset = oldStr.substring(9);
 
                 int j = 0;
                 int exit1, exit2;
@@ -273,7 +367,7 @@ public class Controller {
                 checking = false;
 
                 /*offset part*/
-                for(int k = 0; k < code.size(); k++){
+                for(k = 0; k < code.size(); k++){
                     if(code.get(k).startsWith(offset))
                         checking = true;
                 }
@@ -283,14 +377,14 @@ public class Controller {
                 }
             }
             
-            else if (code.get(i).startsWith("DADDU"))		/*DADDU rd, rs, rt. DADDU R4, R1, R2*/
+            else if (oldStr.startsWith("DADDU"))		/*DADDU rd, rs, rt. DADDU R4, R1, R2*/
             {
                 String jString;
-                String rd = code.get(i).substring(6, 8);
-                String rs = code.get(i).substring(10, 13);
-                String rt  = code.get(i).substring(14);
+                String rd = oldStr.substring(6, 8);
+                String rs = oldStr.substring(10, 13);
+                String rt  = oldStr.substring(14);
 
-                int j = 0;
+                int j = 1;
                 int exit1, exit2, exit3;
                 boolean checking = false;
 
@@ -342,14 +436,14 @@ public class Controller {
                 }
             }
             
-            else if (code.get(i).startsWith("SLT"))		/*SLT rd, rs, rt. SLT R3, R1, R2*/
+            else if (oldStr.startsWith("SLT"))		/*SLT rd, rs, rt. SLT R3, R1, R2*/
             {
                 String jString;
-                String rd = code.get(i).substring(4, 6);
-                String rs = code.get(i).substring(8, 10);
-                String rt  = code.get(i).substring(12);
+                String rd = oldStr.substring(4, 6);
+                String rs = oldStr.substring(8, 10);
+                String rt  = oldStr.substring(12);
 
-                int j = 0;
+                int j = 1;
                 int exit1, exit2, exit3;
                 boolean checking = false;
 
@@ -401,10 +495,10 @@ public class Controller {
                 }
             }
             
-            else if (code.get(i).startsWith("BC"))			/*BC offset. BC L2*/
+            else if (oldStr.startsWith("BC"))			/*BC offset. BC L2*/
             {
                 String jString;
-                String offset = code.get(i).substring(3);
+                String offset = oldStr.substring(3);
 
                 int j = 0;
                 int exit1;
@@ -413,7 +507,7 @@ public class Controller {
                 exit1 = 0;
 
                 /*offset part*/
-                for(int k = 0; k < code.size(); k++){
+                for(k = 0; k < code.size(); k++){
                     if(code.get(k).startsWith(offset))
                         checking = true;
                 }
