@@ -543,12 +543,12 @@ public class Controller {
     
         int ctr;
         
-        String 	IR31_26,
-                IR25_21,
-                IR20_16,
-                IR15_11,
-                IR10_6,
-                IR5_0;
+        String 	IR31_26 = " ",
+                IR25_21 = " ",
+                IR20_16 = " ",
+                IR15_11 = " ",
+                IR10_6 = " ",
+                IR5_0 = " ";
         
         for (ctr = 0; ctr < 8; ctr++ ) {
             if (code.contains(opcodeTable[ctr][1])) {
@@ -576,6 +576,8 @@ public class Controller {
                 break;
             }
         }
+        
+        return IR31_26 + IR25_21 + IR20_16 + IR15_11 + IR10_6 + IR5_0;
     }
     
     private String opcode_format1(String code, ArrayList<String> line){
