@@ -74,10 +74,23 @@ public class Controller {
                 }
 
                 checking = false;
-                j = 0;
+                String hex = "1000";
+                int value;
 
                 /*offset part*/
-                /*Insert offset part. Dont forget exit2*/
+                while (!(hex.equals("1FFF")) && exit2 == 0)
+                {
+                    checking = offset.contains(hex);
+
+                    value = Integer.parseInt(hex, 16);	
+                    value++;
+                    hex = Integer.toHexString(value);
+
+
+                    if(checking)
+                        exit2 = 1;
+
+                }
 
                 if(!checking){
                     return "Syntax Error: offset does not exist";
@@ -99,14 +112,7 @@ public class Controller {
                     return "Syntax Error: base should be from R0 to R31";
                 }
             }
-
-            //        else if (line.startsWith("DADDIU"))		/*DADDIU rt, rs, immediate. DADDIU R1, R0, #0002*/
-            //        else if (line.startsWith("XORI"))		/*XORI rt, rs, immediate. XORI R10, R2, #FFFF*/
-            //        else if (line.startsWith("BLTZ"))		/*BLTZ rs, offset. BLTZ R1, L1 */
-            //        else if (line.startsWith("DADDU"))		/*DADDU rd, rs, rt. DADDU R4, R1, R2*/
-            //        else if (line.startsWith("SLT"))		/*SLT rd, rs, rt. SLT R3, R1, R2*/
-            //        else if (line.startsWith("BC"))			/*BC offset. BC L2*/
-            
+          
             else if (code.get(i).startsWith("DADDIU"))		/*DADDIU rt, rs, immediate. DADDIU R3, R3, #0002*/
             {
                 String jString;
@@ -150,15 +156,22 @@ public class Controller {
                 }
 
                 checking = false;
-                j = 0;
-
+                String hex = "0000";
+                int value;
+                
                 /*imm part*/
-                while(j < 32 && exit3 == 0) {
-                    jString = Integer.toString(j);		/*Only number. No "R" of R1*/
-                    checking = imm.contains(jString);
+                while (!(hex.equals("0FFF")) && exit3 == 0)
+                {
+                    checking = imm.contains(hex);
+
+                    value = Integer.parseInt(hex, 16);	
+                    value++;
+                    hex = Integer.toHexString(value);
+
 
                     if(checking)
                         exit3 = 1;
+
                 }
 
                 if(!checking){
@@ -209,15 +222,22 @@ public class Controller {
                 }
 
                 checking = false;
-                j = 0;
-
+                String hex = "0000";
+                int value;
+                
                 /*imm part*/
-                while(j < 32 && exit3 == 0) {
-                    jString = Integer.toString(j);		/*Only number. No "R" of R1*/
-                    checking = imm.contains(jString);
+                while (!(hex.equals("0FFF")) && exit3 == 0)
+                {
+                    checking = imm.contains(hex);
+
+                    value = Integer.parseInt(hex, 16);	
+                    value++;
+                    hex = Integer.toHexString(value);
+
 
                     if(checking)
                         exit3 = 1;
+
                 }
 
                 if(!checking){
@@ -251,7 +271,6 @@ public class Controller {
                 }
 
                 checking = false;
-                j = 0;
 
                 /*offset part*/
                 for(int k = 0; k < code.size(); k++){
@@ -403,12 +422,9 @@ public class Controller {
                     return "Syntax Error: offset does not exist";
                 }
             }
-            //        else if Branch Name ex. L1, L2
-
-            /*How to check LD/SD offset, immediate, branch offset*/
         }
 
-    return " "; //no error
+        return " "; //no error
     }
 
     
