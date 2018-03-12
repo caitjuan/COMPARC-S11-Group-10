@@ -37,7 +37,7 @@ public class Controller {
             if(inst.get(i).startsWith(";"))
                 c = new Code(inst.get(i), null, null); //initialize model
             else
-                c = new Code(inst.get(i), Integer.toHexString(4096 + (i * 4)), getOpcode(inst.get(i))); //initialize model
+                c = new Code(inst.get(i), Integer.toHexString(4096 + (i * 4)), getOpcode(inst.get(i), inst)); //initialize model
             code.add(c);
         }
     }
@@ -412,7 +412,7 @@ public class Controller {
     }
 
     
-    private String getOpcode(String code){
+    private String getOpcode(String code, ArrayList<String> line){
         /*  FORMAT 1:   opcode  offset 
             FORMAT 2:   opcode  rs  	rt      imm
             FORMAT 3:   opcode  base  	rt/ft  	offset
@@ -440,13 +440,18 @@ public class Controller {
                 IR10_6,
                 IR5_0;
         
-        for (ctr = 0; ctr < ; ctr++ ) {
+        for (ctr = 0; ctr < 8; ctr++ ) {
             if (code.contains(opcodeTable[ctr][1])) {
 		/* Initialize IR31 to IR 26 */
                 IR31_26 = opcodeTable[ctr][2];
                 
                 if ( opcodeTable[ctr][0].equals("format1") ) {
-
+                    String temp = opcode_format1(code, line);
+                    IR25_21 = temp.substring(0, 5);
+                    IR20_16 = temp.substring(6, 10);
+                    IR15_11 = temp.substring(11, 15);
+                    IR10_6 = temp.substring(16, 20);
+                    IR5_0 = temp.substring(21, 25);
                 } else if ( opcodeTable[ctr][0].equals("format2") ) {
 
                 } else if ( opcodeTable[ctr][0].equals("format3") ) {
@@ -461,5 +466,56 @@ public class Controller {
                 break;
             }
         }
+    }
+    
+    private String opcode_format1(String code, ArrayList<String> line){
+        int i = 0;
+        String offset = code.substring(9);
+        int ctr1 = 0;
+        int ctr2 = 0;
+        
+        do {
+            if(!line.get(i).contentEquals(code))
+                ctr1++;
+            i++;
+        }while(!line.get(i-1).contentEquals(code));
+        
+        do {
+            if(!line.get(ctr1).contains(offset))
+                ctr2++;
+            ctr1++;
+        }while(!line.get(ctr1).contains(offset));
+        
+        offset = Integer.toHexString(ctr2);
+        int length = offset.length();
+        char append;
+        
+        if(ctr2 < 8){
+            append = '0';
+        }
+        else
+            append = 'F';
+        
+        for(int j = 0; j < 26 - length; j++){
+            offset = offset + append;
+        }
+        
+        char[] in = offset.toCharArray();
+        int begin = 0;
+        int end = in.length-1;
+        char temp;
+        
+        while(end > begin){
+            temp = in[begin];
+            in[begin] = in[end];
+            in[end] = temp;
+            end--;
+            begin++;
+        }
+        
+        offset = in.toString();
+        
+        return offset;
+    }
     
 }
