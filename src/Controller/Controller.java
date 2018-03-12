@@ -99,39 +99,14 @@ public class Controller {
                     return "Syntax Error: base should be from R0 to R31";
                 }
             }
-<<<<<<< HEAD
+
             //        else if (line.startsWith("DADDIU"))		/*DADDIU rt, rs, immediate. DADDIU R1, R0, #0002*/
             //        else if (line.startsWith("XORI"))		/*XORI rt, rs, immediate. XORI R10, R2, #FFFF*/
             //        else if (line.startsWith("BLTZ"))		/*BLTZ rs, offset. BLTZ R1, L1 */
             //        else if (line.startsWith("DADDU"))		/*DADDU rd, rs, rt. DADDU R4, R1, R2*/
             //        else if (line.startsWith("SLT"))		/*SLT rd, rs, rt. SLT R3, R1, R2*/
             //        else if (line.startsWith("BC"))			/*BC offset. BC L2*/
-            else if(code.get(i).startsWith("BLTZ")) {
-                String offset = code.get(i).substring(9);
-                boolean exist = false;
-                
-                for(int j = 0; j < code.size(); j++){
-                    if(code.get(j).startsWith(offset))
-                        exist = true;
-                }
-                
-                if(!exist){
-                    return "Syntax Error! The offset does not exist";
-                }
-            }
             
-            else if(code.get(i).startsWith("BC")) {
-                String offset = code.get(i).substring(3);
-                boolean exist = false;
-                
-                for(int j = 0; j < code.size(); j++){
-                    if(code.get(j).startsWith(offset))
-                        exist = true;
-                }
-                
-                if(!exist){
-                    return "Syntax Error! The offset does not exist";
-=======
             else if (code.get(i).startsWith("DADDIU"))		/*DADDIU rt, rs, immediate. DADDIU R3, R3, #0002*/
             {
                 String jString;
@@ -190,6 +165,7 @@ public class Controller {
                     return "Syntax Error: immediate should be from R0 to R31";
                 }
             }
+            
             else if (code.get(i).startsWith("XORI"))		/*XORI rt, rs, immediate. XORI R10, R2, #FFFF*/
             {
                 String jString;
@@ -246,9 +222,9 @@ public class Controller {
 
                 if(!checking){
                     return "Syntax Error: immediate should be from R0 to R31";
->>>>>>> 4e7de254066b07a1d641e154a2ff2f319b6d3f83
                 }
             }
+            
             else if (code.get(i).startsWith("BLTZ"))		/*BLTZ rs, offset. BLTZ R1, L1 */
             {
                 String jString;
@@ -287,6 +263,7 @@ public class Controller {
                     return "Syntax Error: offset does not exist";
                 }
             }
+            
             else if (code.get(i).startsWith("DADDU"))		/*DADDU rd, rs, rt. DADDU R4, R1, R2*/
             {
                 String jString;
@@ -345,6 +322,7 @@ public class Controller {
                     return "Syntax Error: rt should be from R0 to R31";
                 }
             }
+            
             else if (code.get(i).startsWith("SLT"))		/*SLT rd, rs, rt. SLT R3, R1, R2*/
             {
                 String jString;
@@ -403,6 +381,7 @@ public class Controller {
                     return "Syntax Error: rt should be from R0 to R31";
                 }
             }
+            
             else if (code.get(i).startsWith("BC"))			/*BC offset. BC L2*/
             {
                 String jString;
