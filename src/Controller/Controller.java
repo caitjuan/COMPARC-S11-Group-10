@@ -413,7 +413,53 @@ public class Controller {
 
     
     private String getOpcode(String code){
+        /*  FORMAT 1:   opcode  offset 
+            FORMAT 2:   opcode  rs  	rt      imm
+            FORMAT 3:   opcode  base  	rt/ft  	offset
+            FORMAT 4:	opcode	rs      sat     offset
+            FORMAT 5:	opcode	rs      rt      rd       sat    func	
+        */
+        String opcodeTable[][] = {
+            /* format	instruc.    opcode      sat      func */
+            {"format1", "BC",       "110010",	"",      ""},
+            {"format2", "DADDIU",   "011001",	"",      ""},
+            {"format2", "XORI",     "001110",	"",      ""},
+            {"format3", "LD",       "110111",	"",      ""},
+            {"format3", "SD",       "111111",	"",      ""},
+            {"format4", "BLTZ",     "000001",	"00000", ""},
+            {"format5", "DADDU",    "011001",	"00000", "101101"},
+            {"format5", "SLT",       "000000",	"00000", "101010"},
+        };
+    
+        int ctr;
         
-    }
+        String 	IR31_26,
+                IR25_21,
+                IR20_16,
+                IR15_11,
+                IR10_6,
+                IR5_0;
+        
+        for (ctr = 0; ctr < ; ctr++ ) {
+            if (code.contains(opcodeTable[ctr][1])) {
+		/* Initialize IR31 to IR 26 */
+                IR31_26 = opcodeTable[ctr][2];
+                
+                if ( opcodeTable[ctr][0].equals("format1") ) {
+
+                } else if ( opcodeTable[ctr][0].equals("format2") ) {
+
+                } else if ( opcodeTable[ctr][0].equals("format3") ) {
+
+                } else if ( opcodeTable[ctr][0].equals("format4") ) {
+                    IR20_16 = opcodeTable[ctr][3];
+                } else if ( opcodeTable[ctr][0].equals("format5") ) {
+                    IR10_6 = opcodeTable[ctr][3];
+                    IR5_0 = opcodeTable[ctr][4];
+                } 
+				
+                break;
+            }
+        }
     
 }
