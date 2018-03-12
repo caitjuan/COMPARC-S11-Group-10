@@ -34,7 +34,10 @@ public class Controller {
         }while(!error.contentEquals(" "));
         
         for(int i = 0; i < inst.size(); i++){
-            c = new Code(inst.get(i), Integer.toHexString(4096 + (i * 4)), getOpcode(inst.get(i))); //initialize model
+            if(inst.get(i).startsWith(";"))
+                c = new Code(inst.get(i), null, getOpcode(inst.get(i))); //initialize model
+            else
+                c = new Code(inst.get(i), Integer.toHexString(4096 + (i * 4)), getOpcode(inst.get(i))); //initialize model
             code.add(c);
         }
     }
