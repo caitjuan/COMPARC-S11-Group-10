@@ -563,7 +563,7 @@ public class Controller {
                     IR10_6 = temp.substring(16, 20);
                     IR5_0 = temp.substring(21, 25);
                 } else if ( opcodeTable[ctr][0].equals("format2") ) {
-
+                    String temp = opcode_format2(code);
                 } else if ( opcodeTable[ctr][0].equals("format3") ) {
 
                 } else if ( opcodeTable[ctr][0].equals("format4") ) {
@@ -598,18 +598,17 @@ public class Controller {
             ctr1++;
         }while(!line.get(ctr1).contains(offset));
         
-        offset = Integer.toHexString(ctr2);
+        offset = Integer.toBinaryString(ctr2);
         int length = offset.length();
         char append;
         
-        if(ctr2 < 8){
+        if(ctr2 < 8)
             append = '0';
-        }
         else
-            append = 'F';
+            append = '1';
         
         for(int j = 0; j < 26 - length; j++){
-            offset = offset + append;
+            offset += append;
         }
         
         char[] in = offset.toCharArray();
@@ -630,4 +629,92 @@ public class Controller {
         return offset;
     }
     
+    private String opcode_format2(String code){
+        
+        String splitIns[], splitRs[], splitRt[], splitImm;
+        
+        if(code.contains("DADDIU"))
+            splitIns = code.split("DADDIU ", 2); //split[0] = "DADDIU ", split[1] = "rs, rt, imm"
+        else
+            splitIns = code.split("XORI ", 2);
+        
+        splitRs = splitIns[1].split(",", 2);
+        splitRt = splitRs[1].split(",", 2);
+        splitImm = splitRt[1].substring(0,3);
+        
+        boolean found = false;
+        int i = 0;
+        
+        while(!found){
+            if(splitRs[0].contains(Integer.toString(i))){
+                splitRs[0] = Integer.toBinaryString(i);
+                found = true;
+            }
+            i++;
+        }
+        
+        char append;
+        
+        if(i - 1 < 8)
+            append = '0';
+        else
+            append = '1';
+        
+        for(int j = 0; j < 5 - splitRs[0].length(); j++){
+            splitRs[0] += append;
+        }
+        
+        char[] in = splitRs[0].toCharArray();
+        int begin = 0;
+        int end = in.length-1;
+        char temp;
+        
+        while(end > begin){
+            temp = in[begin];
+            in[begin] = in[end];
+            in[end] = temp;
+            end--;
+            begin++;
+        }
+        
+        splitRs[0] = in.toString();
+        
+        found = false;
+        i = 0;
+        
+        while(!found){
+            if(splitRt[0].contains(Integer.toString(i))){
+                splitRt[0] = Integer.toBinaryString(i);
+                found = true;
+            }
+            i++;
+        }
+        
+        if(i - 1 < 8)
+            append = '0';
+        else
+            append = '1';
+        
+        for(int j = 0; j < 5 - splitRt[0].length(); j++){
+            splitRt[0] += append;
+        }
+        
+        in = splitRt[0].toCharArray();
+        begin = 0;
+        end = in.length-1;
+        
+        while(end > begin){
+            temp = in[begin];
+            in[begin] = in[end];
+            in[end] = temp;
+            end--;
+            begin++;
+        }
+        
+        splitRt[0] = in.toString();
+        
+        splitImm = Integer.toBinaryString(Integer.parseInt(splitImm, 16));
+        
+        return splitRs[0] + splitRt[0] + splitImm;
+    }
 }
