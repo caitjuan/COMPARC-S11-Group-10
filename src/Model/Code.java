@@ -10,6 +10,7 @@ public class Code {
         this.address = address;
         this.opcode = opcode;
     }
+    
     public String getAddress() {
         return address;
     }

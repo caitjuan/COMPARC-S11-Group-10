@@ -1,38 +1,47 @@
+/* 
+    ERROR CHECKING: rt does not check for R10-R32
+                    offset should be from 0000-0FFF
+*/
+
 package Controller;
 
 import Model.*;
 import java.util.*;
 
 public class Controller {
-    Scanner sc = new Scanner(System.in);
-    ArrayList<Code> code = new ArrayList<>();
-    
-    public void main(String[] args) {
+    static Scanner sc = new Scanner(System.in);
+    static ArrayList<Code> code = new ArrayList<>();
+        
+    public static void main(String args[]){
         getInput();
     }
     
-    public void getInput(){
+    public static void getInput(){
         String line;
         String error =" ";
         Code c;
         ArrayList<String> inst = new ArrayList<String>();
-        
-        System.out.println("Enter your code (press '?' when done):");
-        
-        do{ 
+        boolean stop = false;
+        do{
+            System.out.println("Enter your code (press '?' when done):");
             do{
-                line = sc.next();
-                if(!line.equals('?')){
+                line = sc.nextLine();
+                if(!line.equals("?")){
                     inst.add(line);
                 }
-            }while(!sc.next().equals('?'));
+                else {
+                    stop = true;
+                }
+            }while(!stop);
+            
             error = errorCheck(inst);
             if(!error.contentEquals(" ")) { //if there's an error
                 System.out.println(error); //will print the error
                 inst.clear(); //reset arraylist
+                stop = false;
             }
         }while(!error.contentEquals(" "));
-        
+                
         for(int i = 0; i < inst.size(); i++){
             if(inst.get(i).startsWith(";"))
                 c = new Code(inst.get(i), null, null); //initialize model
@@ -42,59 +51,50 @@ public class Controller {
         }
     }
     
-    private String errorCheck(ArrayList<String> code){
+    private static String errorCheck(ArrayList<String> code){
         boolean isError = false;
         int size = code.size();
-
-        for(int i = 0; i < size; i++)
-        {
+        
+        for(int i = 0; i < size; i++) {
             String oldStr = code.get(i);
-            String delStr;
+            String delStr = " ";
 
             int length = oldStr.length();
             int x = 0;
             int k = 0;
             int exit = 0;
-
-
-            while (k < length && exit == 0)
-            {
+            
+            while (k < length && exit == 0) {
                 if (!(oldStr.charAt(k)== ':'))
                     x++;
                 else
                     exit = 1;
-
-
                 k++;
             }
-
-
-            if (exit == 1)
-            {
+            
+            if (exit == 1){
                 delStr = oldStr.substring(0, k);
                 oldStr = oldStr.replace(delStr, "");
             }
             
-            if (oldStr.startsWith("LD")) /*LD rt, offset(base)*/ 
-            {
+            if(oldStr.startsWith("LD")) /*LD rt, offset(base)*/ {
                 String jString;
-                String rt = oldStr.substring(3, 5);
+                String rt = oldStr.substring(3, 6);
                 String offset = oldStr.substring(7, 11);
                 String base  = oldStr.substring(12);
-
+                
                 int j = 1;
                 int exit1, exit2, exit3;
                 boolean checking = false;
 
                 exit1 = exit2 = exit3 = 0;
-
                 /*rt part*/
                 while(j < 32 && exit1 == 0) {
-                        jString = Integer.toString(j);		/*Only number. No "R" of R1*/
-                        checking = rt.contains(jString);
-
-                        if(checking)
-                            exit1 = 1;
+                    jString = Integer.toString(j);		/*Only number. No "R" of R1*/
+                    checking = rt.contains(jString);
+                    j++;
+                    if(checking)
+                        exit1 = 1;
                 }
 
                 if(!checking) {
@@ -106,18 +106,13 @@ public class Controller {
                 int value;
 
                 /*offset part*/
-                while (!(hex.equals("1FFF")) && exit2 == 0)
-                {
+                while (!(hex.equalsIgnoreCase("1FFF")) && exit2 == 0){
                     checking = offset.contains(hex);
-
                     value = Integer.parseInt(hex, 16);	
                     value++;
                     hex = Integer.toHexString(value);
-
-
                     if(checking)
                         exit2 = 1;
-
                 }
 
                 if(!checking){
@@ -140,7 +135,6 @@ public class Controller {
                     return "Syntax Error: base should be from R0 to R31";
                 }
             }
-            
             else if (oldStr.startsWith("SD")) /*SD rt, offset(base)*/
             {
                 String jString;
@@ -156,11 +150,11 @@ public class Controller {
 
                 /*rt part*/
                 while(j < 32 && exit1 == 0) {
-                        jString = Integer.toString(j);		/*Only number. No "R" of R1*/
-                        checking = rt.contains(jString);
+                    jString = Integer.toString(j);		/*Only number. No "R" of R1*/
+                    checking = rt.contains(jString);
 
-                        if(checking)
-                            exit1 = 1;
+                    if(checking)
+                        exit1 = 1;
                 }
 
                 if(!checking) {
@@ -180,10 +174,8 @@ public class Controller {
                     value++;
                     hex = Integer.toHexString(value);
 
-
                     if(checking)
                         exit2 = 1;
-
                 }
 
                 if(!checking){
@@ -207,8 +199,7 @@ public class Controller {
                 }
             }
           
-            else if (oldStr.startsWith("DADDIU"))		/*DADDIU rt, rs, immediate. DADDIU R3, R3, #0002*/
-            {
+            else if (oldStr.startsWith("DADDIU")) /*DADDIU rt, rs, immediate. DADDIU R3, R3, #0002*/ {
                 String jString;
                 String rt = oldStr.substring(7, 9);
                 String rs = oldStr.substring(11, 14);
@@ -265,7 +256,6 @@ public class Controller {
 
                     if(checking)
                         exit3 = 1;
-
                 }
 
                 if(!checking){
@@ -273,8 +263,7 @@ public class Controller {
                 }
             }
             
-            else if (oldStr.startsWith("XORI"))		/*XORI rt, rs, immediate. XORI R10, R2, #FFFF*/
-            {
+            else if (oldStr.startsWith("XORI"))	/*XORI rt, rs, immediate. XORI R10, R2, #FFFF*/ {
                 String jString;
                 String rt = oldStr.substring(5, 7);
                 String rs = oldStr.substring(9, 12);
@@ -288,11 +277,11 @@ public class Controller {
 
                 /*rt part*/
                 while(j < 32 && exit1 == 0) {
-                        jString = Integer.toString(j);		/*Only number. No "R" of R1*/
-                        checking = rt.contains(jString);
+                    jString = Integer.toString(j);		/*Only number. No "R" of R1*/
+                    checking = rt.contains(jString);
 
-                        if(checking)
-                            exit1 = 1;
+                    if(checking)
+                        exit1 = 1;
                 }
 
                 if(!checking) {
@@ -521,8 +510,7 @@ public class Controller {
         return " "; //no error
     }
 
-    
-    private String getOpcode(String code, ArrayList<String> line){
+    private static String getOpcode(String code, ArrayList<String> line){
         /*  FORMAT 1:   opcode  offset 
             FORMAT 2:   opcode  rs  	rt      imm
             FORMAT 3:   opcode  base  	rt/ft  	offset
@@ -564,15 +552,20 @@ public class Controller {
                     IR5_0 = temp.substring(21, 25);
                 } else if ( opcodeTable[ctr][0].equals("format2") ) {
                     String temp = opcode_format2(code);
+                    IR25_21 = temp.substring(0, 5);
+                    IR20_16 = temp.substring(6, 10);
+                    IR15_11 = temp.substring(11, 15);
+                    IR10_6 = temp.substring(16, 20);
+                    IR5_0 = temp.substring(21, 25);
                 } else if ( opcodeTable[ctr][0].equals("format3") ) {
-
+                    String temp = opcode_format3(code);
                 } else if ( opcodeTable[ctr][0].equals("format4") ) {
                     IR20_16 = opcodeTable[ctr][3];
                 } else if ( opcodeTable[ctr][0].equals("format5") ) {
                     IR10_6 = opcodeTable[ctr][3];
                     IR5_0 = opcodeTable[ctr][4];
-                } 
-				
+                }
+                
                 break;
             }
         }
@@ -580,7 +573,7 @@ public class Controller {
         return IR31_26 + IR25_21 + IR20_16 + IR15_11 + IR10_6 + IR5_0;
     }
     
-    private String opcode_format1(String code, ArrayList<String> line){
+    private static String opcode_format1(String code, ArrayList<String> line){
         int i = 0;
         String offset = code.substring(9);
         int ctr1 = 0;
@@ -607,29 +600,22 @@ public class Controller {
         else
             append = '1';
         
+        char[] off = {' ', ' '};
+        
         for(int j = 0; j < 26 - length; j++){
-            offset += append;
+            off[j] = append;
         }
         
-        char[] in = offset.toCharArray();
-        int begin = 0;
-        int end = in.length-1;
-        char temp;
-        
-        while(end > begin){
-            temp = in[begin];
-            in[begin] = in[end];
-            in[end] = temp;
-            end--;
-            begin++;
+        i = 0;
+        for(int k = off.length - 1; k < length; k++){
+            off[k] = offset.charAt(i);
+            i++;
         }
         
-        offset = in.toString();
-        
-        return offset;
+        return off.toString();
     }
     
-    private String opcode_format2(String code){
+    private static String opcode_format2(String code){
         
         String splitIns[], splitRs[], splitRt[], splitImm;
         
@@ -660,24 +646,19 @@ public class Controller {
         else
             append = '1';
         
+        char[] Rs = {' ', ' '};
+        
         for(int j = 0; j < 5 - splitRs[0].length(); j++){
-            splitRs[0] += append;
+            Rs[j] = append;
         }
         
-        char[] in = splitRs[0].toCharArray();
-        int begin = 0;
-        int end = in.length-1;
-        char temp;
-        
-        while(end > begin){
-            temp = in[begin];
-            in[begin] = in[end];
-            in[end] = temp;
-            end--;
-            begin++;
+        i = 0;
+        for(int k = Rs.length - 1; k < splitRs[0].length(); k++){
+            Rs[k] = splitRs[0].charAt(i);
+            i++;
         }
         
-        splitRs[0] = in.toString();
+        splitRs[0] = Rs.toString();
         
         found = false;
         i = 0;
@@ -695,26 +676,109 @@ public class Controller {
         else
             append = '1';
         
+        char[] Rt = {' ', ' '};
+        
         for(int j = 0; j < 5 - splitRt[0].length(); j++){
-            splitRt[0] += append;
+            Rt[j] = append;
         }
         
-        in = splitRt[0].toCharArray();
-        begin = 0;
-        end = in.length-1;
-        
-        while(end > begin){
-            temp = in[begin];
-            in[begin] = in[end];
-            in[end] = temp;
-            end--;
-            begin++;
+        i = 0;
+        for(int k = Rt.length - 1; k < splitRt[0].length(); k++){
+            Rt[k] = splitRt[0].charAt(i);
+            i++;
         }
         
-        splitRt[0] = in.toString();
+        splitRt[0] = Rt.toString();
         
         splitImm = Integer.toBinaryString(Integer.parseInt(splitImm, 16));
         
         return splitRs[0] + splitRt[0] + splitImm;
+    }
+    
+    private static String opcode_format3(String code){
+        /*
+            opcode base rt offset LD rt, offset(base)
+            LD rt = R1-R31
+            SD rt = R0-R31
+            offset = 1000-1FFF
+        */
+        
+        String splitIns[], splitRt[], splitOff[], splitBase[];
+        
+        if(code.contains("LD"))
+            splitIns = code.split("LD ", 2); 
+        else
+            splitIns = code.split("SD ", 2);
+        
+        splitRt = splitIns[1].split(",", 2);
+        splitOff = splitRt[1].split("(",2);
+        splitBase = splitOff[1].split(")",2);
+        
+        boolean found = false;
+        int i = 0;
+        
+        while(!found){
+            if(splitRt[0].contains(Integer.toString(i))){
+                splitRt[0] = Integer.toBinaryString(i);
+                found = true;
+            }
+            i++;
+        }
+        
+        char append;
+        
+        if(i - 1 < 8)
+            append = '0';
+        else
+            append = '1';
+        
+        char[] Rt = {' ', ' '};
+        
+        for(int j = 0; j < 5 - splitRt[0].length(); j++){
+            Rt[j] = append;
+        }
+        
+        i = 0;
+        for(int k = Rt.length - 1; k < splitRt[0].length(); k++){
+            Rt[k] = splitRt[0].charAt(i);
+            i++;
+        }
+        
+        splitRt[0] = Rt.toString();
+        
+        String splitOffset = Integer.toBinaryString(Integer.parseInt(splitOff[0], 16));
+        
+        i = 0;
+        found = false;
+        
+        while(!found){
+            if(splitRt[0].contains(Integer.toString(i))){
+                splitRt[0] = Integer.toBinaryString(i);
+                found = true;
+            }
+            i++;
+        }
+        
+        if(i - 1 < 8)
+            append = '0';
+        else
+            append = '1';
+        
+        char[] base = {' ', ' '};
+        
+        for(int j = 0; j < 5 - splitBase[0].length(); j++){
+            base[j] = append;
+        }
+        
+        i = 0;
+        for(int k = base.length - 1; k < splitBase[0].length(); k++){
+            base[k] = splitBase[0].charAt(i);
+            i++;
+        }
+        
+        splitBase[0] = base.toString();
+        
+        return splitBase[0] + splitRt[0] + splitOffset;
+        
     }
 }
