@@ -52,462 +52,491 @@ public class Controller {
     }
     
     private static String errorCheck(ArrayList<String> code){
-        boolean isError = false;
-        int size = code.size();
+        int size = code.size();         //get the size of array
+        String splitIns[], splitReg1[];
+        int ctr = 0;
+        String branchName[] = new String[100];
         
-        for(int i = 0; i < size; i++) {
-            String oldStr = code.get(i);
-            String delStr = " ";
-
-            int length = oldStr.length();
-            int x = 0;
-            int k = 0;
-            int exit = 0;
+        for(int br = 0; br < size; br++) {
+            String array = code.get(br);    //the index of array
+            String temp[];
             
-            while (k < length && exit == 0) {
-                if (!(oldStr.charAt(k)== ':'))
-                    x++;
-                else
+            int alength = array.length();
+            int k = 0, exit = 0;
+            
+            while (k < alength && exit == 0) {
+                if ((array.charAt(k)== ':'))
                     exit = 1;
                 k++;
             }
             
             if (exit == 1){
-                delStr = oldStr.substring(0, k);
-                oldStr = oldStr.replace(delStr, "");
+                temp = array.split(": ", 2);
+                branchName[ctr] = temp[0];
+                ctr++;
+            }
+        }
+        
+        for(int i = 0; i < size; i++) {
+            String array = code.get(i);    //the index of array
+            String oldStr;
+            String temp[];
+            
+            //For Branch Name
+            int alength = array.length();
+            int k = 0, exit = 0;
+            
+            while (k < alength && exit == 0) {
+                if ((array.charAt(k)== ':'))
+                    exit = 1;
+                k++;
+            }
+            if (exit == 1){
+                temp = array.split(": ", 2);
+                oldStr = temp[1];
+            }
+            else
+                oldStr = array;
+            
+            //Check if instruction is correct
+            if(!(oldStr.startsWith("LD ") || oldStr.startsWith("SD ") || oldStr.startsWith("DADDIU ") || oldStr.startsWith("XORI ") || oldStr.startsWith("BLTZ ") || oldStr.startsWith("DADDU ") || oldStr.startsWith("SLT ") || oldStr.startsWith("BC "))) {
+                return "Instruction does not exist";
             }
             
-            if(oldStr.startsWith("LD")) /*LD rt, offset(base)*/ {
-                String jString;
-                String rt = oldStr.substring(3, 6);
-                String offset = oldStr.substring(7, 11);
-                String base  = oldStr.substring(12);
+            //For LD rt and BLTZ rs ONLY
+            if(oldStr.startsWith("LD") || oldStr.startsWith("BLTZ")) {
+                if (oldStr.startsWith("LD"))
+                    splitIns = oldStr.split("LD ", 2);                  //Split LD rt,offset(base) to [0] = "LD " and [1] = "rt,offset(base)"
+                else
+                    splitIns = oldStr.split("BLTZ ", 2);
+                splitReg1 = splitIns[1].split(",", 2);                //The [1] = "rt,offset(base)" of above got split to [0]="rt" and [1] got the rest
                 
-                int j = 1;
-                int exit1, exit2, exit3;
-                boolean checking = false;
-
-                exit1 = exit2 = exit3 = 0;
-                /*rt part*/
+                int length, m = 0, result;                              //Length of the splited instruction(ex. rt, off, base)
+                                                                    //m is index for the length of string(ex. rt, off, base)
+                                                                    //result is the integer value of the register
+                length = splitReg1[0].length();                       //length of Rt
+                
+                boolean isValidReg = true;
+                if (splitIns[1].startsWith("R") || splitIns[1].startsWith("r")) {
+                /* Remove first("R") to get the INTEGER part */
+                    try {
+                        Integer.parseInt(splitReg1[0].substring(1));
+                    } catch (NumberFormatException e) {
+                        isValidReg = false;
+                        }
+                } else {
+                    isValidReg = false;
+                }
+                
+                StringBuilder sb = new StringBuilder(40);
+                String jString;                                     //jString is used for storing the numeric numbers of the string
+                char reg1[] = new char[length];
+                splitReg1[0].getChars(0, length, reg1, 0);
+                
+                int j = 1;                                          //This is for R1 to R31
+                int exit1 = 0;                            //If its R1 to R31, it will tell you to exit
+                
+                while (m < length) {
+                    if (reg1[m] >= '0' && reg1[m] <= '9') {
+                        sb.append(reg1[m]);
+                    }
+                    m++;
+                }
+                jString = sb.toString();
+                result = Integer.parseInt(jString);             //jString is the numbers found in the string and converted to integer Result
+                
                 while(j < 32 && exit1 == 0) {
-                    jString = Integer.toString(j);		/*Only number. No "R" of R1*/
-                    checking = rt.contains(jString);
+                    if (result == j)                //If result is between 1 to 31, then exit is true
+                        exit1 = 1;
                     j++;
-                    if(checking)
-                        exit1 = 1;
                 }
-
-                if(!checking) {
-                    return "Syntax Error: rt should be from R0 to R31";
-                }
-
-                checking = false;
-                String hex = "1000";
-                int value;
-
-                /*offset part*/
-                while (!(hex.equalsIgnoreCase("1FFF")) && exit2 == 0){
-                    checking = offset.contains(hex);
-                    value = Integer.parseInt(hex, 16);	
-                    value++;
-                    hex = Integer.toHexString(value);
-                    if(checking)
-                        exit2 = 1;
-                }
-
-                if(!checking){
-                    return "Syntax Error: offset does not exist";
-                }
-
-                checking = false;
-                j = 0;
-
-                /*base part*/
-                while(j < 32 && exit3 == 0) {
-                    jString = Integer.toString(j);		/*Only number. No "R" of R1*/
-                    checking = base.contains(jString);
-
-                    if(checking)
-                        exit3 = 1;
-                }
-
-                if(!checking){
-                    return "Syntax Error: base should be from R0 to R31";
+                if(exit1 == 0 || !isValidReg) {
+                    return "Syntax Error reg1 for "+ oldStr;
                 }
             }
-            else if (oldStr.startsWith("SD")) /*SD rt, offset(base)*/
-            {
-                String jString;
-                String rt = oldStr.substring(3, 5);
-                String offset = oldStr.substring(7, 11);
-                String base  = oldStr.substring(12);
-
-                int j = 0;
-                int exit1, exit2, exit3;
-                boolean checking = false;
-
-                exit1 = exit2 = exit3 = 0;
-
-                /*rt part*/
-                while(j < 32 && exit1 == 0) {
-                    jString = Integer.toString(j);		/*Only number. No "R" of R1*/
-                    checking = rt.contains(jString);
-
-                    if(checking)
-                        exit1 = 1;
-                }
-
-                if(!checking) {
-                    return "Syntax Error: rt should be from R0 to R31";
-                }
-
-                checking = false;
-                String hex = "1000";
-                int value;
-
-                /*offset part*/
-                while (!(hex.equals("1FFF")) && exit2 == 0)
-                {
-                    checking = offset.contains(hex);
-
-                    value = Integer.parseInt(hex, 16);	
-                    value++;
-                    hex = Integer.toHexString(value);
-
-                    if(checking)
-                        exit2 = 1;
-                }
-
-                if(!checking){
-                    return "Syntax Error: offset does not exist";
-                }
-
-                checking = false;
-                j = 0;
-
-                /*base part*/
-                while(j < 32 && exit3 == 0) {
-                    jString = Integer.toString(j);		/*Only number. No "R" of R1*/
-                    checking = base.contains(jString);
-
-                    if(checking)
-                        exit3 = 1;
-                }
-
-                if(!checking){
-                    return "Syntax Error: base should be from R0 to R31";
-                }
-            }
-          
-            else if (oldStr.startsWith("DADDIU")) /*DADDIU rt, rs, immediate. DADDIU R3, R3, #0002*/ {
-                String jString;
-                String rt = oldStr.substring(7, 9);
-                String rs = oldStr.substring(11, 14);
-                String imm  = oldStr.substring(15);
-
-                int j = 1;
-                int exit1, exit2, exit3;
-                boolean checking = false;
-
-                exit1 = exit2 = exit3 = 0;
-
-                /*rt part*/
-                while(j < 32 && exit1 == 0) {
-                        jString = Integer.toString(j);		/*Only number. No "R" of R1*/
-                        checking = rt.contains(jString);
-
-                        if(checking)
-                            exit1 = 1;
-                }
-
-                if(!checking) {
-                    return "Syntax Error: rt should be from R0 to R31";
-                }
-
-                checking = false;
-                j = 0;
-
-                /*rs part*/
-                while(j < 32 && exit2 == 0) {
-                    jString = Integer.toString(j);		/*Only number. No "R" of R1*/
-                    checking = rs.contains(jString);
-
-                    if(checking)
-                        exit2 = 1;
-                }
-
-                if(!checking){
-                    return "Syntax Error: rs should be from R0 to R31";
-                }
-
-                checking = false;
-                String hex = "0000";
-                int value;
+            //For DADDIU rt, XORI rt, DADDU rd and SLT rd ONLY
+            if(oldStr.startsWith("DADDIU") || oldStr.startsWith("XORI") || oldStr.startsWith("DADDU") || oldStr.startsWith("SLT")) {
+                if (oldStr.startsWith("DADDIU"))
+                    splitIns = oldStr.split("DADDIU ", 2);                  
+                else if (oldStr.startsWith("XORI"))
+                    splitIns = oldStr.split("XORI ", 2);
+                else if (oldStr.startsWith("DADDU"))
+                    splitIns = oldStr.split("DADDU ", 2);
+                else
+                    splitIns = oldStr.split("SLT ", 2);
                 
-                /*imm part*/
-                while (!(hex.equals("0FFF")) && exit3 == 0)
-                {
-                    checking = imm.contains(hex);
-
-                    value = Integer.parseInt(hex, 16);	
-                    value++;
-                    hex = Integer.toHexString(value);
-
-
-                    if(checking)
-                        exit3 = 1;
+                splitReg1 = splitIns[1].split(",", 3);
+                
+                int length1, m = 0, result;
+                length1 = splitReg1[0].length();
+                
+                boolean isValidReg = true;
+                if (splitIns[1].startsWith("R") || splitIns[1].startsWith("r")) {
+                /* Remove first("R") to get the INTEGER part */
+                    try {
+                        Integer.parseInt(splitReg1[0].substring(1));
+                    } catch (NumberFormatException e) {
+                        isValidReg = false;
+                        }
+                } else {
+                    isValidReg = false;
                 }
-
-                if(!checking){
-                    return "Syntax Error: immediate should be from R0 to R31";
+                
+                StringBuilder sb = new StringBuilder(40);
+                String jString;                 
+                char reg1[] = new char[length1];
+                splitReg1[0].getChars(0, length1, reg1, 0);
+                
+                int j = 1;                      
+                int exit1 = 0;
+                
+                while (m < length1) {
+                    if (reg1[m] >= '0' && reg1[m] <= '9') {
+                        sb.append(reg1[m]);
+                    }
+                    m++;
+                }
+                jString = sb.toString();
+                result = Integer.parseInt(jString);
+                
+                while(j < 32 && exit1 == 0) {
+                    if (result == j)               
+                        exit1 = 1;
+                    j++;
+                }
+                if(exit1 == 0 || !isValidReg) {
+                    return "Syntax Error reg1 for "+ oldStr;
                 }
             }
-            
-            else if (oldStr.startsWith("XORI"))	/*XORI rt, rs, immediate. XORI R10, R2, #FFFF*/ {
-                String jString;
-                String rt = oldStr.substring(5, 7);
-                String rs = oldStr.substring(9, 12);
-                String imm  = oldStr.substring(13);
-
-                int j = 1;
-                int exit1, exit2, exit3;
-                boolean checking = false;
-
-                exit1 = exit2 = exit3 = 0;
-
-                /*rt part*/
+            //For SD rt ONLY
+            if(oldStr.startsWith("SD")) {
+                splitIns = oldStr.split("SD ", 2);                  //Split LD rt,offset(base) to [0] = "LD " and [1] = "rt,offset(base)"
+                splitReg1 = splitIns[1].split(",", 2);                //The [1] = "rt,offset(base)" of above got split to [0]="rt" and [1] got the rest
+                
+                int length, m = 0, result;                              //Length of the splited instruction(ex. rt, off, base)
+                                                                    //m is index for the length of string(ex. rt, off, base)
+                                                                    //result is the integer value of the register
+                length = splitReg1[0].length();                       //length of Rt
+                
+                boolean isValidReg = true;
+                if (splitIns[1].startsWith("R") || splitIns[1].startsWith("r")) {
+                /* Remove first("R") to get the INTEGER part */
+                    try {
+                        Integer.parseInt(splitReg1[0].substring(1));
+                    } catch (NumberFormatException e) {
+                        isValidReg = false;
+                        }
+                } else {
+                    isValidReg = false;
+                }
+                
+                StringBuilder sb = new StringBuilder(40);
+                String jString;                                     //jString is used for storing the numeric numbers of the string
+                char reg1[] = new char[length];
+                splitReg1[0].getChars(0, length, reg1, 0);
+                
+                int j = 0;                                          //This is for R1 to R31
+                int exit1 = 0;                            //If its R1 to R31, it will tell you to exit
+                
+                while (m < length) {
+                    if (reg1[m] >= '0' && reg1[m] <= '9') {
+                        sb.append(reg1[m]);
+                    }
+                    m++;
+                }
+                jString = sb.toString();
+                result = Integer.parseInt(jString);             //jString is the numbers found in the string and converted to integer Result
+                
                 while(j < 32 && exit1 == 0) {
-                    jString = Integer.toString(j);		/*Only number. No "R" of R1*/
-                    checking = rt.contains(jString);
+                    if (result == j)                //If result is between 1 to 31, then exit is true
+                        exit1 = 1;
+                    j++;
+                }
+                if(exit1 == 0 || !isValidReg) {
+                    return "Syntax Error reg1 for "+ oldStr;
+                }
+            }
+            //For DADDIU rs, XORI rs, DADDU rs and SLT rs ONLY
+            if(oldStr.startsWith("DADDIU") || oldStr.startsWith("XORI") || oldStr.startsWith("DADDU") || oldStr.startsWith("SLT")) {
+                if (oldStr.startsWith("DADDIU"))
+                    splitIns = oldStr.split("DADDIU ", 2);                  
+                else if (oldStr.startsWith("XORI"))
+                    splitIns = oldStr.split("XORI ", 2);
+                else if (oldStr.startsWith("DADDU"))
+                    splitIns = oldStr.split("DADDU ", 2);
+                else
+                    splitIns = oldStr.split("SLT ", 2);
+                
+                splitReg1 = splitIns[1].split(", ", 3); //[0]=rt, [1]=rs, [2]=imm
+                
+                int length1, m = 0, result;
+                length1 = splitReg1[1].length();    //rs.length
+                
+                boolean isValidReg = true;
+                if (splitReg1[1].startsWith("R") || splitReg1[1].startsWith("r")) {
+                /* Remove first("R") to get the INTEGER part */
+                    try {
+                        Integer.parseInt(splitReg1[1].substring(1));
+                    } catch (NumberFormatException e) {
+                        isValidReg = false;
+                        }
+                } else {
+                    isValidReg = false;
+                }
+                
+                StringBuilder sb = new StringBuilder(40);
+                String jString;                 
+                char reg1[] = new char[length1];
+                splitReg1[1].getChars(0, length1, reg1, 0);
+                
+                int j = 0;                      
+                int exit1 = 0;
+                
+                while (m < length1) {
+                    if (reg1[m] >= '0' && reg1[m] <= '9') {
+                        sb.append(reg1[m]);
+                    }
+                    m++;
+                }
+                jString = sb.toString();
+                result = Integer.parseInt(jString);
+                
+                while(j < 32 && exit1 == 0) {
+                    if (result == j)               
+                        exit1 = 1;
+                    j++;
+                }
+                if(exit1 == 0 || !isValidReg) {
+                    return "Syntax Error reg2 for "+ oldStr;
+                }
+            }
+            //For DADDU rt and SLT rt ONLY
+            if(oldStr.startsWith("DADDU") || oldStr.startsWith("SLT")) {
+                if (oldStr.startsWith("DADDU"))
+                    splitIns = oldStr.split("DADDU ", 2);
+                else
+                    splitIns = oldStr.split("SLT ", 2);
+                
+                splitReg1 = splitIns[1].split(", ", 3); //[0]=rt, [1]=rs, [2]=imm
+                
+                int length1, m = 0, result;
+                length1 = splitReg1[2].length();    //rs.length
+                
+                boolean isValidReg = true;
+                if (splitReg1[2].startsWith("R") || splitReg1[2].startsWith("r")) {
+                /* Remove first("R") to get the INTEGER part */
+                    try {
+                        Integer.parseInt(splitReg1[2].substring(1));
+                    } catch (NumberFormatException e) {
+                        isValidReg = false;
+                        }
+                } else {
+                    isValidReg = false;
+                }
+                
+                StringBuilder sb = new StringBuilder(40);
+                String jString;                 
+                char reg1[] = new char[length1];
+                splitReg1[2].getChars(0, length1, reg1, 0);
+                
+                int j = 0;                      
+                int exit1 = 0;        
+                
+                while (m < length1) {
+                    if (reg1[m] >= '0' && reg1[m] <= '9') {
+                        sb.append(reg1[m]);
+                    }
+                    m++;
+                }
+                jString = sb.toString();
+                result = Integer.parseInt(jString);
+                
+                while(j < 32 && exit1 == 0) {
+                    if (result == j)               
+                        exit1 = 1;
+                    j++;
+                }
+                if(exit1 == 0 || !isValidReg) {
+                    return "Syntax Error reg3 for "+ oldStr;
+                }
+            }
+            //For LD offset and SD offset ONLY
+            if(oldStr.startsWith("LD") || oldStr.startsWith("SD")) {
+                if (oldStr.startsWith("LD"))
+                    splitIns = oldStr.split("LD ", 2);
+                else
+                    splitIns = oldStr.split("SD ", 2);
+                
+                splitReg1 = splitIns[1].split(", ", 2); //[0]=rt, [1]=offset(base)
+                
+                String a = splitReg1[1].substring(0, 4);
+                
+                String hex = "0000";
+                Integer value;
 
+                int exit1 = 0;
+                boolean checking;
+                while (!(hex.equals("1000")) && exit1 == 0){
+                    //Check if a is equal to hex
+                    checking = a.equals(hex.toUpperCase());
+                    //Change hex to int value
+                    value = Integer.parseInt(hex, 16);	
+                    //Increase value
+                    value++;
+                    //Change value to hex
+                    hex = Integer.toHexString(value);
+                    //Zero extend hex
+                    char zeroExtend[] = new char[4];
+                    int extend = 4 - hex.length();
+                    for (int zero = 0; zero < extend; zero++) {
+                        zeroExtend[zero] = '0';
+                    }
+                    char tempChar[] = new char[4-extend];
+                    hex.getChars(0, 4-extend, tempChar, 0);
+                    
+                    for (int zero = 3; zero >= extend; zero--) {
+                        zeroExtend[zero] = tempChar[zero-extend];
+                    }
+                    
+                    hex = String.valueOf(zeroExtend);
                     if(checking)
                         exit1 = 1;
                 }
-
-                if(!checking) {
-                    return "Syntax Error: rt should be from R0 to R31";
-                }
-
-                checking = false;
-                j = 0;
-
-                /*rs part*/
-                while(j < 32 && exit2 == 0) {
-                    jString = Integer.toString(j);		/*Only number. No "R" of R1*/
-                    checking = rs.contains(jString);
-
-                    if(checking)
-                        exit2 = 1;
-                }
-
-                if(!checking){
-                    return "Syntax Error: rs should be from R0 to R31";
-                }
-
-                checking = false;
-                String hex = "0000";
-                int value;
                 
-                /*imm part*/
-                while (!(hex.equals("0FFF")) && exit3 == 0)
-                {
-                    checking = imm.contains(hex);
+                if(exit1 == 0) {
+                    return "Syntax Error reg2 for "+ oldStr;
+                }
+            }
+            //For LD base and SD base ONLY
+            if(oldStr.startsWith("LD") || oldStr.startsWith("SD")) {
+                if (oldStr.startsWith("LD"))
+                    splitIns = oldStr.split("LD ", 2);
+                else
+                    splitIns = oldStr.split("SD ", 2);
+                
+                splitReg1 = splitIns[1].split(", ", 2); //[0]=rt, [1]=offset(base)
+                
+                int length1, m = 0, result;
+                length1 = splitReg1[1].length();    //rs.length
+                
+                boolean isValidReg = true;
+                String a = splitReg1[1].substring(5, length1-1);
+                
+                if (a.startsWith("R") || a.startsWith("r")) {
+                /* Remove first("R") to get the INTEGER part */
+                    try {
+                        Integer.parseInt(a.substring(1));
+                    } catch (NumberFormatException e) {
+                        isValidReg = false;
+                        }
+                } else {
+                    isValidReg = false;
+                }
+                
+                StringBuilder sb = new StringBuilder(40);
+                String jString;                 
+                length1 = a.length();
+                char reg1[] = new char[length1];
+                a.getChars(0, length1, reg1, 0);
+                
+                int j = 0;                      
+                int exit1 = 0;
+                
+                while (m < length1) {
+                    if (reg1[m] >= '0' && reg1[m] <= '9') {
+                        sb.append(reg1[m]);
+                    }
+                    m++;
+                }
+                jString = sb.toString();
+                result = Integer.parseInt(jString);
+                
+                while(j < 32 && exit1 == 0) {
+                    if (result == j)               
+                        exit1 = 1;
+                    j++;
+                }
+                
+                if(exit1 == 0 || !isValidReg) {
+                    return "Syntax Error reg3 for "+ oldStr;
+                }
+            }
+            //For DADDIU Imm and XORI Imm ONLY
+            if(oldStr.startsWith("DADDIU") || oldStr.startsWith("XORI")) {
+                if (oldStr.startsWith("DADDIU"))
+                    splitIns = oldStr.split("DADDIU ", 2);
+                else
+                    splitIns = oldStr.split("XORI ", 2);
+                
+                splitReg1 = splitIns[1].split(", ", 3); //[0]=rt, [1]=rs, [2]=#FFFF
+                
+                if (!(splitReg1[2].substring(0, 1).equals("#")))
+                    return "Syntax Error reg3 for "+ oldStr;
+                
+                String a = splitReg1[2].substring(1, 5);
+                String hex = "0000";
+                Integer value;
 
+                int exit1 = 0;
+                boolean checking;
+                while (!(hex.equals("1000")) && exit1 == 0){
+                    //Check if a is equal to hex
+                    checking = a.equals(hex.toUpperCase());
+                    //Change hex to int value
                     value = Integer.parseInt(hex, 16);	
+                    //Increase value
                     value++;
+                    //Change value to hex
                     hex = Integer.toHexString(value);
-
-
+                    //Zero extend hex
+                    char zeroExtend[] = new char[4];
+                    int extend = 4 - hex.length();
+                    for (int zero = 0; zero < extend; zero++) {
+                        zeroExtend[zero] = '0';
+                    }
+                    char tempChar[] = new char[4-extend];
+                    hex.getChars(0, 4-extend, tempChar, 0);
+                    
+                    for (int zero = 3; zero >= extend; zero--) {
+                        zeroExtend[zero] = tempChar[zero-extend];
+                    }
+                    
+                    hex = String.valueOf(zeroExtend);
                     if(checking)
-                        exit3 = 1;
-
+                        exit1 = 1;
                 }
-
-                if(!checking){
-                    return "Syntax Error: immediate should be from R0 to R31";
+                
+                if(exit1 == 0) {
+                    return "Syntax Error reg3 for "+ oldStr;
                 }
             }
-            
-            else if (oldStr.startsWith("BLTZ"))		/*BLTZ rs, offset. BLTZ R1, L1 */
-            {
-                String jString;
-                String rs = oldStr.substring(5, 7);
-                String offset = oldStr.substring(9);
-
-                int j = 0;
-                int exit1, exit2;
-                boolean checking = false;
-
-                exit1 = exit2 = 0;
-
-                /*rs part*/
-                while(j < 32 && exit1 == 0) {
-                        jString = Integer.toString(j);		/*Only number. No "R" of R1*/
-                        checking = rs.contains(jString);
-
-                        if(checking)
-                            exit1 = 1;
+            //For BLTZ offset and BC offset ONLY
+            if(oldStr.startsWith("BLTZ") || oldStr.startsWith("BC")) {
+                String a;
+                if (oldStr.startsWith("BLTZ")) {
+                    splitIns = oldStr.split("BLTZ ", 2);
+                    splitReg1 = splitIns[1].split(", ", 2); //[0]=rt, [1]=offset
+                    a = splitReg1[1];
                 }
-
-                if(!checking) {
-                    return "Syntax Error: rs should be from R0 to R31";
+                else {
+                    splitIns = oldStr.split("BC ", 2); //[1] = offset
+                    a = splitIns[1];
                 }
-
-                checking = false;
-
-                /*offset part*/
-                for(k = 0; k < code.size(); k++){
-                    if(code.get(k).startsWith(offset))
-                        checking = true;
+                
+                int exit1 = 0;
+                int why = 0;
+                while (why < ctr && exit1 == 0) {
+                    if (branchName[why].equals(a))
+                        exit1 = 1;
+                    why++;
                 }
-
-                if(!checking){
-                    return "Syntax Error: offset does not exist";
-                }
-            }
-            
-            else if (oldStr.startsWith("DADDU"))		/*DADDU rd, rs, rt. DADDU R4, R1, R2*/
-            {
-                String jString;
-                String rd = oldStr.substring(6, 8);
-                String rs = oldStr.substring(10, 13);
-                String rt  = oldStr.substring(14);
-
-                int j = 1;
-                int exit1, exit2, exit3;
-                boolean checking = false;
-
-                exit1 = exit2 = exit3 = 0;
-
-                /*rd part*/
-                while(j < 32 && exit1 == 0) {
-                        jString = Integer.toString(j);		/*Only number. No "R" of R1*/
-                        checking = rd.contains(jString);
-
-                        if(checking)
-                            exit1 = 1;
-                }
-
-                if(!checking) {
-                    return "Syntax Error: rd should be from R0 to R31";
-                }
-
-                checking = false;
-                j = 0;
-
-                /*rs part*/
-                while(j < 32 && exit2 == 0) {
-                    jString = Integer.toString(j);		/*Only number. No "R" of R1*/
-                    checking = rs.contains(jString);
-
-                    if(checking)
-                        exit2 = 1;
-                }
-
-                if(!checking){
-                    return "Syntax Error: rs should be from R0 to R31";
-                }
-
-                checking = false;
-                j = 0;
-
-                /*rt part*/
-                while(j < 32 && exit3 == 0) {
-                    jString = Integer.toString(j);		/*Only number. No "R" of R1*/
-                    checking = rt.contains(jString);
-
-                    if(checking)
-                        exit3 = 1;
-                }
-
-                if(!checking){
-                    return "Syntax Error: rt should be from R0 to R31";
-                }
-            }
-            
-            else if (oldStr.startsWith("SLT"))		/*SLT rd, rs, rt. SLT R3, R1, R2*/
-            {
-                String jString;
-                String rd = oldStr.substring(4, 6);
-                String rs = oldStr.substring(8, 10);
-                String rt  = oldStr.substring(12);
-
-                int j = 1;
-                int exit1, exit2, exit3;
-                boolean checking = false;
-
-                exit1 = exit2 = exit3 = 0;
-
-                /*rd part*/
-                while(j < 32 && exit1 == 0) {
-                        jString = Integer.toString(j);		/*Only number. No "R" of R1*/
-                        checking = rd.contains(jString);
-
-                        if(checking)
-                            exit1 = 1;
-                }
-
-                if(!checking) {
-                    return "Syntax Error: rd should be from R0 to R31";
-                }
-
-                checking = false;
-                j = 0;
-
-                /*rs part*/
-                while(j < 32 && exit2 == 0) {
-                    jString = Integer.toString(j);		/*Only number. No "R" of R1*/
-                    checking = rs.contains(jString);
-
-                    if(checking)
-                        exit2 = 1;
-                }
-
-                if(!checking){
-                    return "Syntax Error: rs should be from R0 to R31";
-                }
-
-                checking = false;
-                j = 0;
-
-                /*rt part*/
-                while(j < 32 && exit3 == 0) {
-                    jString = Integer.toString(j);		/*Only number. No "R" of R1*/
-                    checking = rt.contains(jString);
-
-                    if(checking)
-                        exit3 = 1;
-                }
-
-                if(!checking){
-                    return "Syntax Error: rt should be from R0 to R31";
-                }
-            }
-            
-            else if (oldStr.startsWith("BC"))			/*BC offset. BC L2*/
-            {
-                String jString;
-                String offset = oldStr.substring(3);
-
-                int j = 0;
-                int exit1;
-                boolean checking = false;
-
-                exit1 = 0;
-
-                /*offset part*/
-                for(k = 0; k < code.size(); k++){
-                    if(code.get(k).startsWith(offset))
-                        checking = true;
-                }
-
-                if(!checking){
-                    return "Syntax Error: offset does not exist";
+                
+                if(exit1 == 0) {
+                    return "Syntax Error reg3 for "+ oldStr;
                 }
             }
         }
-
-        return " "; //no error
+        return " ";
     }
 
     private static String getOpcode(String code, ArrayList<String> line){
