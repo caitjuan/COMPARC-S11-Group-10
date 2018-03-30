@@ -42,28 +42,29 @@
                 <!-- INPUT TAB -->
                 <div id="input" class="tab-pane">
                     <h3>INPUT</h3>
+                    <form name="input-form" method="get" action="getInput">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Registers</th>
+                                    <th>Memory</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th><textarea id="codeInput" name="codeInput" rows="15"></textarea></th>
+                                    <th><textarea id="regInput" name="regInput" rows="15"></textarea></th>
+                                    <th><textarea id="memInput" name="memInput" rows="15"></textarea></th>
+                                </tr>
+                            </tbody>
+                        </table>
 
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Code</th>
-                                <th>Registers</th>
-                                <th>Memory</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <th><textarea id="codeInput" rows="15"></textarea></th>
-                                <th><textarea id="regInput" rows="15"></textarea></th>
-                                <th><textarea id="memInput" rows="15"></textarea></th>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    <div class="center-div">
-                        <button type="button" class="btn">Load</button>
-                        <button type="button" class="btn">Reset</button>
-                    </div>
+                        <div class="center-div">
+                            <input type="submit" value="Load" class="btn" />
+                            <input type="submit" value="Reset" class="btn" />
+                        </div>
+                    </form>
 
                     <table class="table">
                         <tbody>
